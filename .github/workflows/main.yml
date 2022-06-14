@@ -1,0 +1,30 @@
+name: Setup Actions
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  repository_dispatch:
+    types: [setup]
+  workflow_dispatch:
+
+jobs:
+  setup:
+    name: Setup all workflows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GH_KBASE }}
+
+      - name: Github event failure
+        if: ${{ !github.event.client_payload.passed }}
+        env:
+          MESSAGE: ${{ github.event.client_payload.message }}
+        run: echo $MESSAGE
+
+      - name: Finished
+        run: echo "Workflow execution completed successfully."
+  
+      
