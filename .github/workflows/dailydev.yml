@@ -1,18 +1,15 @@
-name: Daily Dev Bookmarks
+name: Setup Actions
 
 on:
-  workflow_run:
-    workflows: ["Setup Actions"]
-    types:
-      - completed
+  schedule:
+    - cron: "0 0 * * *"
   repository_dispatch:
-    types:
-      - dailydev
+    types: [setup]
   workflow_dispatch:
 
 jobs:
   dailydev:
-    name: Updated Bookmarks of daily.dev
+    name: Setup dailydev workflow
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,20 +26,17 @@ jobs:
           max_post_count: 20
           readme_path: "./bookmarks.md"
           gh_token: ${{ secrets.GH_KBASE }}
-          commit_message: "Updated bookmarks from daily.dev"
+          commit_message: "ci: updated daily.dev"
           committer_username: "iamsarvagyaa"
           committer_email: ${{ secrets.GH_EMAIL }}
           enable_keepalive: true
           retry_count: 6
           retry_wait_time: 10
 
-      - name: Github event failure
-        if: ${{ !github.event.client_payload.passed }}
-        env:
+  run_if_failure:
+    if: ${{ !github.event.client_payload.passed }}
+    runs-on: ubuntu-latest
+    steps:
+      - env:
           MESSAGE: ${{ github.event.client_payload.message }}
         run: echo $MESSAGE
-
-      - name: Finished
-        run: echo "Workflow execution completed successfully."
-  
-      
